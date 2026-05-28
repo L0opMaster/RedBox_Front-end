@@ -1,3 +1,3 @@
 class BaseUrl {
-  static final String baseUrl = 'http://192.168.1.101:8081';
+  static final String baseUrl = 'http://172.20.10.4:8081';
 }

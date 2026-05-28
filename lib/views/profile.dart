@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:front_redbox/core/storage_service.dart';
 import 'package:front_redbox/model/user.dart';
 import 'package:front_redbox/provider/auth_provider.dart';
+import 'package:front_redbox/provider/change_langue_provider.dart';
 import 'package:front_redbox/provider/theme_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -88,18 +89,35 @@ class _ProfileState extends State<Profile> {
           ),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.all(13),
-            child: Container(
-              decoration: BoxDecoration(
-                color: color.primaryContainer,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: TextButton(
-                onPressed: () {},
-                child: const Text('KH | EN', style: TextStyle(fontSize: 12)),
-              ),
-            ),
+          Consumer<ChangeLangueProvider>(
+            builder: (context, value, child) {
+              value.loadLangue();
+              bool isEng = value.isEnglish;
+              // value.loadLangue;
+              return Padding(
+                padding: const EdgeInsets.all(13),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: color.primaryContainer,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: TextButton(
+                    onPressed: () {
+                      context.read<ChangeLangueProvider>().togglelanguage();
+                    },
+                    child: Text(
+                      'KH | EN',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: 
+                            isEng? Theme.of(context).colorScheme.onSurface
+                            : Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         ],
       ),

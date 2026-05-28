@@ -82,6 +82,9 @@
 // }
 import 'package:flutter/material.dart';
 import 'package:front_redbox/provider/auth_provider.dart';
+import 'package:front_redbox/provider/category_provider.dart';
+import 'package:front_redbox/provider/change_langue_provider.dart';
+import 'package:front_redbox/provider/product_provider.dart';
 import 'package:front_redbox/provider/theme_provider.dart';
 import 'package:front_redbox/routes/app_routes.dart';
 import 'package:front_redbox/bottomNavigator/ontap_view.dart';
@@ -99,6 +102,9 @@ void main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => ChangeLangueProvider()),
+        ChangeNotifierProvider(create: (_) => ProductProvider()),
       ],
       child: const MyApp(),
     ),
