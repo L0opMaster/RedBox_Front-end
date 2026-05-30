@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:front_redbox/provider/category_provider.dart';
 import 'package:front_redbox/provider/change_langue_provider.dart';
 import 'package:front_redbox/provider/product_provider.dart';
+import 'package:front_redbox/views/detail_view.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -13,13 +14,11 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
-  // bool _fetched = false;
-
+  bool _fetched = false;
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
-  bool _isPaginationLoading = false;
   @override
   void dispose() {
     _searchController.dispose();
@@ -31,14 +30,20 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (mounted) {
-        await context.read<CategoryProvider>().fetchCategory();
-        await context.read<ProductProvider>().fetchProduct();
-      }
-    });
-
     _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_fetched) {
+      _fetched = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.read<ProductProvider>().fetchProduct();
+        context.read<CategoryProvider>().fetchCategory();
+        // context.read<CustomerProvider>().fetchCustomers(refresh: true);
+      });
+    }
   }
 
   void _onScroll() {
@@ -52,22 +57,23 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
-  void _showSnackBar(String message, {bool success = true}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          message,
-          style: TextStyle(color: Theme.of(context).colorScheme.error),
-        ),
-        backgroundColor: success
-            ? Colors.green
-            : Theme.of(context).colorScheme.surface,
-      ),
-    );
-  }
+  // void _showSnackBar(String message, {bool success = true}) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(
+  //       content: Text(
+  //         message,
+  //         style: TextStyle(color: Theme.of(context).colorScheme.error),
+  //       ),
+  //       backgroundColor: success
+  //           ? Colors.green
+  //           : Theme.of(context).colorScheme.surface,
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
+    final isEng = context.read<ChangeLangueProvider>().isEnglish;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
@@ -141,6 +147,10 @@ class _HomeViewState extends State<HomeView> {
                             builder: (context, value, child) {
                               if (value.isLoading) {
                                 return _buildSearchSkele();
+                              }
+
+                              if (value.categories.isEmpty) {
+                                return SizedBox.shrink();
                               }
                               return Container(
                                 width: 42,
@@ -233,6 +243,7 @@ class _HomeViewState extends State<HomeView> {
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .primary
+                                                // ignore: deprecated_member_use
                                                 .withOpacity(0.5),
                                           ),
                                         ),
@@ -270,52 +281,76 @@ class _HomeViewState extends State<HomeView> {
             ),
             const SizedBox(height: 15),
 
-            // ================= PRODUCT GRID =================
+            //PRODUCT GRID
             Expanded(
               child: Consumer<ProductProvider>(
                 builder: (context, value, child) {
-                  if (value.isLoading && value.products.isEmpty) {
+                  if (value.isLoading) {
                     return _buildProCardSkelenorizer();
                   }
-
-                  return GridView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    controller: _scrollController,
-                    itemCount: value.products.length,
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 10,
-                          mainAxisSpacing: 10,
-                          childAspectRatio: 0.75,
-                        ),
-                    itemBuilder: (context, index) {
-                      final product = value.products[index];
-                      final isEng = context
-                          .watch<ChangeLangueProvider>()
-                          .isEnglish;
-                      return Card(
-                        clipBehavior: Clip.antiAlias,
-                        elevation: 2,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // ================= IMAGE =================
-                            Stack(
+                  if (value.products.isEmpty) {
+                    return Center(
+                      child: Text(
+                        isEng ? 'Product not found' : 'មិនមាន​ ឬរកមិនឃើញ',
+                      ),
+                    );
+                  }
+                  return RefreshIndicator(
+                    displacement: 10,
+                    onRefresh: () async {
+                      await context.read<ProductProvider>().fetchProduct(
+                        refresh: true,
+                      );
+                    },
+                    child: GridView.builder(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      controller: _scrollController,
+                      itemCount: value.products.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            childAspectRatio: 0.75,
+                          ),
+                      itemBuilder: (context, index) {
+                        final product = value.products[index];
+                        final isEng = context
+                            .watch<ChangeLangueProvider>()
+                            .isEnglish;
+                        return InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DetailView(product: product),
+                            ),
+                          ),
+                          child: Card(
+                            clipBehavior: Clip.antiAlias,
+                            elevation: 2,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Container(
-                                  height: 130,
-                                  width: double.infinity,
-                                  color: Colors.grey.shade300,
-                                  child: Image.network(
-                                    '${product.imageUrl}',
-                                    errorBuilder: (context, error, stackTrace) {
-                                      return Center(
-                                        child: Icon(Icons.image_not_supported),
-                                      );
-                                    },
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
+                                // ================= IMAGE =================
+                                Stack(
+                                  children: [
+                                    Container(
+                                      height: 130,
+                                      width: double.infinity,
+                                      color: Colors.grey.shade300,
+                                      child: Image.network(
+                                        product.imageUrl,
+                                        fit: BoxFit.fill,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return Center(
+                                                child: Icon(
+                                                  Icons.image_not_supported,
+                                                ),
+                                              );
+                                            },
+                                        loadingBuilder: (context, child, loadingProgress) {
                                           if (loadingProgress == null) {
                                             return child;
                                           }
@@ -333,88 +368,61 @@ class _HomeViewState extends State<HomeView> {
                                             ),
                                           );
                                         },
-                                  ),
-                                ),
-
-                                // ================= ACTIVE (TOP RIGHT) =================
-                                Positioned(
-                                  top: 8,
-                                  right: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: product.isActive
-                                          ? Colors.green
-                                          : Colors.red,
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: Text(
-                                      product.isActive ? "Active" : "Out",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ),
-                                ),
 
-                                // ================= PRODUCT CODE (BOTTOM LEFT) =================
-                                Positioned(
-                                  bottom: 8,
-                                  left: 8,
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 5,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.6),
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: Text(
-                                      product.productCode,
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
+                                    //ACTIVE
+                                    Positioned(
+                                      top: 8,
+                                      right: 8,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: product.isActive
+                                              ? Colors.green
+                                              : Colors.red,
+                                          borderRadius: BorderRadius.circular(
+                                            20,
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ),
-                              ],
-                            ),
-
-                            // ================= PRODUCT INFO =================
-                            Expanded(
-                              child: Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      isEng
-                                          ? product.englishName
-                                          : product.khmerName,
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    SizedBox(height: 5),
-                                    Text("${product.price}"),
                                   ],
                                 ),
-                              ),
+
+                                // ================= PRODUCT INFO =================
+                                Expanded(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          isEng
+                                              ? product.englishName
+                                              : product.khmerName,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        SizedBox(height: 5),
+                                        Text("${product.price}\$"),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                // if (value.isLoading && value.products.isNotEmpty)
+                                //   _buildProCardSkelenorizer(),
+                              ],
                             ),
-                            // if (value.isLoading && value.products.isNotEmpty)
-                            //   _buildProCardSkelenorizer(),
-                          ],
-                        ),
-                      );
-                    },
+                          ),
+                        );
+                      },
+                    ),
                   );
                 },
               ),
@@ -426,9 +434,11 @@ class _HomeViewState extends State<HomeView> {
   }
 
   AppBar _buildAppBar(BuildContext context) {
+    final isEng = context.watch<ChangeLangueProvider>().isEnglish;
+
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primary,
-      title: Text('Home'),
+      title: Text(isEng ? 'Home' : 'ទំព័រដើម'),
       actions: [
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -482,8 +492,6 @@ class _HomeViewState extends State<HomeView> {
                       color: Colors.grey.shade300,
                       child: const Icon(Icons.image, size: 40),
                     ),
-
-                    // ================= ACTIVE (TOP RIGHT) =================
                     Positioned(
                       top: 8,
                       right: 8,
@@ -496,44 +504,35 @@ class _HomeViewState extends State<HomeView> {
                           color: Colors.green,
                           borderRadius: BorderRadius.circular(20),
                         ),
-                        child: const Text(
-                          "Active",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                       ),
                     ),
 
-                    // ================= PRODUCT CODE (BOTTOM LEFT) =================
-                    Positioned(
-                      bottom: 8,
-                      left: 8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withOpacity(0.6),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Text(
-                          "CODE: P001",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
+                    // Positioned(
+                    //   bottom: 8,
+                    //   left: 8,
+                    //   child: Container(
+                    //     padding: const EdgeInsets.symmetric(
+                    //       horizontal: 10,
+                    //       vertical: 5,
+                    //     ),
+                    //     decoration: BoxDecoration(
+                    //       color: Colors.black.withOpacity(0.6),
+                    //       borderRadius: BorderRadius.circular(10),
+                    //     ),
+                    //     child: const Text(
+                    //       "CODE: P001",
+                    //       style: TextStyle(
+                    //         color: Colors.white,
+                    //         fontSize: 11,
+                    //         fontWeight: FontWeight.bold,
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
 
-                // ================= PRODUCT INFO =================
+                //PRODUCT INFO
                 const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: Column(
@@ -570,23 +569,18 @@ class _HomeViewState extends State<HomeView> {
           scrollDirection: Axis.horizontal,
           itemCount: 5,
           itemBuilder: (context, index) {
-            return InkWell(
-              onTap: () {
-                print("Category $index tapped");
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10.0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15),
-                  decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.primaryContainer.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.blueGrey),
-                  ),
-                  child: Center(child: Text("Category $index")),
+            return Padding(
+              padding: const EdgeInsets.only(right: 10.0),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 15),
+                decoration: BoxDecoration(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.primaryContainer.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.blueGrey),
                 ),
+                child: Center(child: Text("Category $index")),
               ),
             );
           },

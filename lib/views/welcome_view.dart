@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:front_redbox/routes/app_routes.dart';
 import 'package:front_redbox/routes/app_transition.dart';
 import 'package:front_redbox/views/login_view.dart';
 import 'package:front_redbox/views/register_view.dart';

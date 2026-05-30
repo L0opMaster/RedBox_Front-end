@@ -35,15 +35,41 @@ class ApiClient {
   //   return response;
   // }
 
-  Future<http.Response> post(String endpoint, Map<String, dynamic> body) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl$endpoint'),
+  Future<http.Response> post(
+    String endpoint,
+    Map<String, dynamic>? body, {
+    String? token,
+  }) async {
+    final url = Uri.parse('$baseUrl$endpoint');
+    final headers = _buildHeaders(token);
+    final response = await http
+        .post(url, headers: headers, body: jsonEncode(body))
+        .timeout(timeOut, onTimeout: () => _timeoutResponse());
+    _handleError(response);
+    return response;
+  }
 
-      headers: {"Content-Type": "application/json"},
+  Future<http.Response> put(
+    String endpoint,
+    Map<String, dynamic>? body, {
+    String? token,
+  }) async {
+    final url = Uri.parse('$baseUrl$endpoint');
+    final headers = _buildHeaders(token);
+    final response = await http
+        .put(url, headers: headers, body: jsonEncode(body))
+        .timeout(timeOut, onTimeout: () => _timeoutResponse());
+    _handleError(response);
+    return response;
+  }
 
-      body: jsonEncode(body),
-    );
-
+  Future<http.Response> delete(String endpoint, {String? token}) async {
+    final url = Uri.parse('$baseUrl$endpoint');
+    final headers = _buildHeaders(token);
+    final response = await http
+        .delete(url, headers: headers)
+        .timeout(timeOut, onTimeout: () => _timeoutResponse());
+    _handleError(response);
     return response;
   }
 

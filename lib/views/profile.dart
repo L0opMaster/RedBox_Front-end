@@ -45,7 +45,7 @@ class _ProfileState extends State<Profile> {
     final roles = user?.roles ?? [];
 
     return Scaffold(
-      backgroundColor: color.background,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
         automaticallyImplyLeading: true,
         backgroundColor: color.primary,
@@ -109,8 +109,8 @@ class _ProfileState extends State<Profile> {
                       'KH | EN',
                       style: TextStyle(
                         fontSize: 12,
-                        color: 
-                            isEng? Theme.of(context).colorScheme.onSurface
+                        color: isEng
+                            ? Theme.of(context).colorScheme.onSurface
                             : Theme.of(context).colorScheme.primary,
                       ),
                     ),
@@ -212,21 +212,30 @@ class _ProfileState extends State<Profile> {
               ),
 
               Padding(
-                padding: const EdgeInsets.fromLTRB(50, 0, 20, 20),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                child: Row(
                   children: [
-                    Text(
-                      '$firstName $lastName',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '@$username',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.grey,
+                    const SizedBox(width: 90), // space from pic profile
+
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '$firstName $lastName',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            '@$username',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],

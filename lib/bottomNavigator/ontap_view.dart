@@ -1,8 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:front_redbox/views/add_product.dart';
+import 'package:front_redbox/core/storage_service.dart';
+import 'package:front_redbox/model/user.dart';
+import 'package:front_redbox/views/add_view.dart';
 import 'package:front_redbox/views/home_view.dart';
-import 'package:front_redbox/views/menu_view.dart';
+import 'package:front_redbox/views/telemetry.dart';
 import 'package:front_redbox/views/profile.dart';
+import 'package:front_redbox/views/telemetry_admin.dart';
 
 class OntapView extends StatefulWidget {
   const OntapView({super.key});
@@ -12,13 +17,39 @@ class OntapView extends StatefulWidget {
 }
 
 class _OntapViewState extends State<OntapView> {
+  UserModel? user;
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUser();
+  }
+
+  Future<void> loadUser() async {
+    final userJson = await StorageService.getUser();
+
+    if (userJson == null) {
+      return;
+    }
+
+    setState(() {
+      user = UserModel.fromJson(jsonDecode(userJson));
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final roles = user?.roles ?? [];
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: [HomeView(), AddProduct(), Profile(), MenuView()],
+        children: [
+          HomeView(),
+          AddView(),
+          Profile(),
+          roles.contains("ROLE_ADMIN") ? TelemetryAdmin() : Telemetry(),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
@@ -35,26 +66,6 @@ class _OntapViewState extends State<OntapView> {
           BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
         ],
       ),
-      // appBar: AppBar(
-      //   elevation: 2,
-      //   automaticallyImplyLeading: false,
-      //   // automaticallyImplyActions: false,
-      //   // leading: IconButton(
-      //   //   onPressed: () {
-      //   //     Navigator.push(context, AppTransition.slide(const Profile()));
-      //   //   },
-      //   //   icon: Icon(Icons.person, size: 30),
-      //   // ),
-      //   actions: [
-      //     Padding(
-      //       padding: const EdgeInsets.only(right: 10.0),
-      //       child: SizedBox(
-      //         height: 30,
-      //         child: Image.asset('assets/images/logo.png', height: 30),
-      //       ),
-      //     ),
-      //   ],
-      // ),
     );
   }
 }
