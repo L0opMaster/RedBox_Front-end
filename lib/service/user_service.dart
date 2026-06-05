@@ -12,7 +12,7 @@ class UserService {
 
   factory UserService() => _instance;
 
-  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl.baseUrl);
+  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl().baseUrl);
 
   Future<List<UserModel>> fetchUser({String? token}) async {
     final response = await apiClient.get('/api/users', token: token);

@@ -22,10 +22,6 @@ class _AddViewState extends State<AddView> {
         elevation: 0,
         backgroundColor: theme.colorScheme.primary,
         foregroundColor: theme.colorScheme.onPrimary,
-        title: Text(
-          isEng ? 'Home' : 'ទំព័រដើម',
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8),
@@ -77,9 +73,7 @@ class _AddViewState extends State<AddView> {
 
                 // Header Titles
                 Text(
-                  isEng
-                      ? 'Register New Product'
-                      : 'ចុះបញ្ជីផលិតផលថ្មី',
+                  isEng ? 'Register New Product' : 'ចុះបញ្ជីផលិតផលថ្មី',
                   textAlign: TextAlign.center,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
@@ -176,10 +170,19 @@ class _AddViewState extends State<AddView> {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.add_box_rounded),
-                  label: Text(isEng ? 'Open Form' : 'បើក Form'),
+                  icon: Icon(
+                    Icons.add_box_rounded,
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
+                  label: Text(
+                    isEng ? 'Open Form' : 'បើក Form',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.surface,
+                    ),
+                  ),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

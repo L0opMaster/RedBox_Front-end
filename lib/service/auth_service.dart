@@ -10,7 +10,7 @@ class AuthService {
   static final AuthService _instance = AuthService._internal();
   factory AuthService() => _instance;
 
-  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl.baseUrl);
+  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl().baseUrl);
 
   Future<AuthResponse?> login({
     required String usernameOrEmail,

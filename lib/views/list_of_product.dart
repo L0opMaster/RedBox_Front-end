@@ -6,6 +6,7 @@ import 'package:front_redbox/views/deleted_dialog.dart';
 import 'package:front_redbox/views/edit_product_form.dart';
 import 'package:front_redbox/views/product_form.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ListOfProduct extends StatefulWidget {
@@ -19,9 +20,11 @@ class _ListOfProductState extends State<ListOfProduct> {
   bool _fetch = false;
   bool _isSearching = false;
   int _selectedCategoryId = 0;
+  int _selectedCategoryIndex = 0;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  final ItemScrollController _itemScrollController = ItemScrollController();
 
   @override
   void didChangeDependencies() {
@@ -40,6 +43,7 @@ class _ListOfProductState extends State<ListOfProduct> {
   @override
   void initState() {
     super.initState();
+    _selectedCategoryId = 0;
     _scrollController.addListener(_onScroll);
   }
 
@@ -149,7 +153,9 @@ class _ListOfProductState extends State<ListOfProduct> {
                 }
                 return SizedBox(
                   height: 36,
-                  child: ListView.builder(
+                  child: ScrollablePositionedList.builder(
+                    itemScrollController: _itemScrollController,
+                    initialScrollIndex: _selectedCategoryIndex,
                     scrollDirection: Axis.horizontal,
                     itemCount: value.categories.length,
                     itemBuilder: (context, index) {
@@ -157,13 +163,21 @@ class _ListOfProductState extends State<ListOfProduct> {
                       final isEng = context
                           .watch<ChangeLangueProvider>()
                           .isEnglish;
-                      final isSelected =
-                          value.selectedCategoryId == category.id;
+                      final isSelected = _selectedCategoryId == category.id;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8.0),
                         child: InkWell(
                           onTap: () async {
-                            value.setSelectedCategory(category.id);
+                            setState(() {
+                              _selectedCategoryId = category.id;
+                              _selectedCategoryIndex = index;
+                            });
+
+                            _itemScrollController.scrollTo(
+                              index: index,
+                              duration: const Duration(microseconds: 300),
+                              alignment: 0.5,
+                            );
                             context.read<MyproductProvider>().fetchMyProducts(
                               refresh: true,
                               categoryId: category.id == 0 ? null : category.id,
@@ -290,7 +304,6 @@ class _ListOfProductState extends State<ListOfProduct> {
 
                                 const SizedBox(width: 14),
 
-                                // =============== PRODUCT INFO ===============
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -347,6 +360,31 @@ class _ListOfProductState extends State<ListOfProduct> {
                                 Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(10),
+                                        color: product.isActive
+                                            ? Colors.green
+                                            : Colors.red,
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 10,
+                                          vertical: 2,
+                                        ),
+                                        child: Text(
+                                          product.isActive
+                                              ? 'Active'
+                                              : 'Inactive',
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.surface,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 5),
                                     SizedBox(
                                       width: 32,
                                       height: 32,
@@ -354,8 +392,8 @@ class _ListOfProductState extends State<ListOfProduct> {
                                         padding: EdgeInsets.zero,
                                         constraints: const BoxConstraints(),
                                         iconSize: 18,
-                                        onPressed: () {
-                                          Navigator.push(
+                                        onPressed: () async {
+                                          await Navigator.push(
                                             context,
                                             MaterialPageRoute(
                                               builder: (context) =>
@@ -364,6 +402,27 @@ class _ListOfProductState extends State<ListOfProduct> {
                                                   ),
                                             ),
                                           );
+                                          WidgetsBinding.instance
+                                              .addPostFrameCallback((_) {
+                                                final index = categoryProvider
+                                                    .categories
+                                                    .indexWhere(
+                                                      (c) =>
+                                                          c.id ==
+                                                          _selectedCategoryId,
+                                                    );
+
+                                                if (index >= 0) {
+                                                  _itemScrollController
+                                                      .scrollTo(
+                                                        index: index,
+                                                        duration: Duration(
+                                                          milliseconds: 300,
+                                                        ),
+                                                        alignment: 0.5,
+                                                      );
+                                                }
+                                              });
                                         },
                                         icon: const Icon(Icons.edit),
                                       ),

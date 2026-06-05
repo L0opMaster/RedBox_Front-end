@@ -4,6 +4,7 @@ import 'package:front_redbox/core/storage_service.dart';
 import 'package:front_redbox/model/user.dart';
 import 'package:front_redbox/provider/auth_provider.dart';
 import 'package:front_redbox/provider/change_langue_provider.dart';
+import 'package:front_redbox/provider/myproduct_provider.dart';
 import 'package:front_redbox/provider/theme_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -37,6 +38,7 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final color = theme.colorScheme;
+    final isEng = context.watch<ChangeLangueProvider>().isEnglish;
 
     final firstName = user?.firstName ?? '';
     final lastName = user?.lastName ?? '';
@@ -50,43 +52,10 @@ class _ProfileState extends State<Profile> {
         automaticallyImplyLeading: true,
         backgroundColor: color.primary,
         elevation: 2,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Mobile Products', style: TextStyle(color: color.surface)),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'User',
-                  style: TextStyle(
-                    fontSize: theme.textTheme.labelMedium?.fontSize ?? 12,
-                    color: color.surface,
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  'ID: 01',
-                  style: TextStyle(
-                    fontSize: theme.textTheme.labelMedium?.fontSize ?? 12,
-                    color: color.surface,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 15, top: 5, bottom: 5),
-          child: Container(
-            decoration: BoxDecoration(
-              color: color.secondary,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Center(
-              child: Text('P', style: TextStyle(color: color.surface)),
-            ),
-          ),
+        title: Text(
+          isEng
+              ? 'Wellcome  $firstName $lastName'
+              : 'សូមស្វាគមន៍​  $firstName $lastName',
         ),
         actions: [
           Consumer<ChangeLangueProvider>(
@@ -98,8 +67,13 @@ class _ProfileState extends State<Profile> {
                 padding: const EdgeInsets.all(13),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: color.primaryContainer,
+                    color: isEng
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isEng ? Colors.black : Colors.white,
+                    ),
                   ),
                   child: TextButton(
                     onPressed: () {
@@ -479,7 +453,7 @@ class _ProfileState extends State<Profile> {
                         setState(() => isLoading = true);
 
                         await Future.delayed(const Duration(seconds: 1));
-
+                        await context.read<MyproductProvider>().clear();
                         await Provider.of<AuthProvider>(
                           context,
                           listen: false,

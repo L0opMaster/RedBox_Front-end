@@ -45,67 +45,115 @@ class _ListOfUserState extends State<ListOfUser> {
             return const Center(child: Text("No users found"));
           }
 
-          return ListView.separated(
+          return ListView.builder(
             padding: const EdgeInsets.all(16),
             itemCount: value.listUser.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
-              final users = value.listUser[index];
+              final user = value.listUser[index];
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                elevation: 3,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.all(12),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Theme.of(
+                              context,
+                            ).colorScheme.primary,
+                            child: Text(
+                              user.firstName[0].toUpperCase(),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
 
-                  // Avatar
-                  // leading: CircleAvatar(
-                  //   radius: 28,
-                  //   backgroundColor: colorScheme.primaryContainer,
-                  //   backgroundImage: (users.imageUrl != null)
-                  //       ? NetworkImage(users.imageUrl)
-                  //       : null,
-                  //   child: (users.imageUrl == null)
-                  //       ? const Icon(Icons.person, color: Colors.red)
-                  //       : null,
-                  // ),
+                          const SizedBox(width: 16),
 
-                  // Name + username
-                  title: Text(
-                    '${users.firstName} ${users.lastName}',
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  subtitle: Text(users.username),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "${user.firstName} ${user.lastName}",
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
 
-                  // Status
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: users.active
-                          ? Colors.green.withOpacity(0.15)
-                          : Colors.red.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      users.active ? 'ACTIVE' : 'OFF',
-                      style: TextStyle(
-                        color: users.active ? Colors.green : Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                                const SizedBox(height: 4),
+
+                                Text(
+                                  "@${user.username}",
+                                  style: TextStyle(color: Colors.grey.shade600),
+                                ),
+                              ],
+                            ),
+                          ),
+
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: user.active
+                                  ? Colors.green.shade100
+                                  : Colors.red.shade100,
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            child: Text(
+                              user.active ? "Active" : "Inactive",
+                              style: TextStyle(
+                                color: user.active
+                                    ? Colors.green.shade700
+                                    : Colors.red.shade700,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+
+                      const Divider(height: 24),
+
+                      Row(
+                        children: [
+                          const Icon(Icons.email_outlined, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(child: Text(user.email)),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: user.roles.map<Widget>((role) {
+                            return Chip(
+                              label: Text(
+                                role.toString(),
+                                style: const TextStyle(fontSize: 12),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );

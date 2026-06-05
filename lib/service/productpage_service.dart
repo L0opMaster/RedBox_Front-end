@@ -10,7 +10,7 @@ class ProductpageService {
   static final ProductpageService _instance = ProductpageService._internal();
   factory ProductpageService() => _instance;
 
-  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl.baseUrl);
+  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl().baseUrl);
 
   Future<ProductPage> fetchProductPage({
     String query = '',
@@ -102,6 +102,34 @@ class ProductpageService {
       throw Exception(
         'Failed to delete product (${response.statusCode}): ${response.body}',
       );
+    }
+  }
+
+  Future<List<Product>> getAllProduct({String? token}) async {
+    final response = await apiClient.get('/api/products', token: token);
+
+    if (response.statusCode == 200) {
+      print('getall status code ${response.statusCode}');
+      final List data = jsonDecode(response.body) as List;
+      print('getall Product ${response.body}');
+      return data.map((e) => Product.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed: ${response.statusCode}');
+    }
+  }
+
+  Future<List<MyProduct>> getAllMyProduct({String? token}) async {
+    final response = await apiClient.get(
+      '/api/products/my-products',
+      token: token,
+    );
+
+    if (response.statusCode == 200) {
+      final List data = jsonDecode(response.body);
+
+      return data.map((e) => MyProduct.fromJson(e)).toList();
+    } else {
+      throw Exception('Failed: ${response.statusCode}');
     }
   }
 }

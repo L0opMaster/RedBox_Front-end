@@ -18,7 +18,7 @@ class _TelemetryState extends State<Telemetry> {
     if (!_fetch) {
       _fetch = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        context.read<MyproductProvider>().fetchMyProducts();
+        context.read<MyproductProvider>().gatAllMyPro();
       });
     }
   }
@@ -29,10 +29,11 @@ class _TelemetryState extends State<Telemetry> {
 
     final myProductProvider = context.watch<MyproductProvider>();
 
-    final products = myProductProvider.myproducts;
+    final products = myProductProvider.allMyProducts;
 
     // no crash even if empty
     final totalProducts = products.length;
+    final inactiveProducts = products.where((p) => p.isActive == false).length;
 
     final activeProducts = products.where((p) => p.isActive == true).length;
 
@@ -78,6 +79,17 @@ class _TelemetryState extends State<Telemetry> {
               subtitle: 'Products currently active',
               icon: Icons.check_circle,
             ),
+            const SizedBox(height: 16),
+
+            _buildCard(
+              context,
+              title: 'Inactive Products',
+              value: inactiveProducts.toString(),
+              subtitle: 'Products currently inactive',
+              icon: Icons.cancel_rounded,
+            ),
+
+            const SizedBox(height: 16),
 
             const SizedBox(height: 16),
 

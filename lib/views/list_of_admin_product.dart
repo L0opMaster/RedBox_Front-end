@@ -3,10 +3,10 @@ import 'package:front_redbox/provider/category_provider.dart';
 import 'package:front_redbox/provider/change_langue_provider.dart';
 import 'package:front_redbox/provider/myproduct_provider.dart';
 import 'package:front_redbox/provider/product_provider.dart';
-import 'package:front_redbox/views/deleted_dialog.dart';
-import 'package:front_redbox/views/edit_product_form.dart';
+import 'package:front_redbox/views/detail_view_admin.dart';
 import 'package:front_redbox/views/product_form.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class ListOfAdminProduct extends StatefulWidget {
@@ -18,10 +18,11 @@ class ListOfAdminProduct extends StatefulWidget {
 
 class _ListOfAdminProductState extends State<ListOfAdminProduct> {
   bool _fetch = false;
-  bool _isSearching = false;
+  bool isSearching = false;
   final ScrollController _scrollController = ScrollController();
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
+  final ItemScrollController _itemScrollController = ItemScrollController();
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -105,7 +106,7 @@ class _ListOfAdminProductState extends State<ListOfAdminProduct> {
                           setState(() {
                             _searchController.clear();
 
-                            _isSearching = false;
+                            isSearching = false;
                           });
                           _searchFocusNode.unfocus();
 
@@ -146,7 +147,8 @@ class _ListOfAdminProductState extends State<ListOfAdminProduct> {
                 }
                 return SizedBox(
                   height: 36,
-                  child: ListView.builder(
+                  child: ScrollablePositionedList.builder(
+                    itemScrollController: _itemScrollController,
                     scrollDirection: Axis.horizontal,
                     itemCount: value.categories.length,
                     itemBuilder: (context, index) {
@@ -161,6 +163,11 @@ class _ListOfAdminProductState extends State<ListOfAdminProduct> {
                         child: InkWell(
                           onTap: () {
                             value.setSelectedCategory(category.id);
+                            _itemScrollController.scrollTo(
+                              index: index,
+                              duration: const Duration(milliseconds: 300),
+                              alignment: 0.5,
+                            );
                             context.read<ProductProvider>().fetchProduct(
                               refresh: true,
                               categoryId: category.id == 0 ? null : category.id,
@@ -232,137 +239,125 @@ class _ListOfAdminProductState extends State<ListOfAdminProduct> {
                       itemBuilder: (context, index) {
                         final product = value.products[index];
 
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 14),
-                          child: Padding(
-                            padding: const EdgeInsets.all(12),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: Image.network(
-                                    product.imageUrl,
-                                    width: 90,
-                                    height: 90,
-                                    fit: BoxFit.cover,
+                        return InkWell(
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  DetailViewAdmin(product: product),
+                            ),
+                          ),
+                          child: Card(
+                            margin: const EdgeInsets.only(bottom: 14),
+                            child: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Image.network(
+                                      product.imageUrl,
+                                      width: 90,
+                                      height: 90,
+                                      fit: BoxFit.cover,
 
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Container(
+                                      errorBuilder:
+                                          (context, error, stackTrace) =>
+                                              Container(
+                                                width: 90,
+                                                height: 90,
+                                                color: Colors.grey.shade200,
+                                                child: const Icon(
+                                                  Icons.broken_image,
+                                                ),
+                                              ),
+
+                                      loadingBuilder:
+                                          (context, child, loadingProgress) {
+                                            if (loadingProgress == null) {
+                                              return child;
+                                            }
+
+                                            return SizedBox(
                                               width: 90,
                                               height: 90,
-                                              color: Colors.grey.shade200,
-                                              child: const Icon(
-                                                Icons.broken_image,
+                                              child: const Center(
+                                                child:
+                                                    CircularProgressIndicator(),
                                               ),
-                                            ),
-
-                                    loadingBuilder:
-                                        (context, child, loadingProgress) {
-                                          if (loadingProgress == null) {
-                                            return child;
-                                          }
-
-                                          return SizedBox(
-                                            width: 90,
-                                            height: 90,
-                                            child: const Center(
-                                              child:
-                                                  CircularProgressIndicator(),
-                                            ),
-                                          );
-                                        },
+                                            );
+                                          },
+                                    ),
                                   ),
-                                ),
 
-                                const SizedBox(width: 14),
+                                  const SizedBox(width: 14),
 
-                                // =============== PRODUCT INFO ===============
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        isEng
-                                            ? product.englishName
-                                            : product.khmerName,
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 6),
-
-                                      Text(
-                                        '${isEng ? 'Price' : 'តម្លៃ'} : \$${product.price}',
-                                        style: TextStyle(
-                                          color: colorScheme.onSurface
-                                              .withOpacity(0.8),
-                                        ),
-                                      ),
-
-                                      const SizedBox(height: 6),
-
-                                      // ================= CATEGORY =================
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 12,
-                                          vertical: 6,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: colorScheme.primaryContainer,
-                                          borderRadius: BorderRadius.circular(
-                                            30,
+                                  // =============== PRODUCT INFO ===============
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          isEng
+                                              ? product.englishName
+                                              : product.khmerName,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                                        child: Text(
-                                          '${isEng ? 'Category' : 'ប្រភេទ'} : ${product.category}',
+
+                                        const SizedBox(height: 6),
+
+                                        Text(
+                                          '${isEng ? 'Price' : 'តម្លៃ'} : \$${product.price}',
                                           style: TextStyle(
-                                            color: colorScheme.primary,
-                                            fontWeight: FontWeight.w600,
+                                            color: colorScheme.onSurface
+                                                .withOpacity(0.8),
                                           ),
                                         ),
-                                      ),
 
-                                      const SizedBox(height: 14),
-                                    ],
+                                        const SizedBox(height: 6),
+
+                                        // ================= CATEGORY =================
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: colorScheme.primaryContainer,
+                                            borderRadius: BorderRadius.circular(
+                                              30,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            '${isEng ? 'Category' : 'ប្រភេទ'} : ${product.category}',
+                                            style: TextStyle(
+                                              color: colorScheme.primary,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 14),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                // Column(
-                                //   children: [
-                                //     IconButton.outlined(
-                                //       onPressed: () {
-                                //         Navigator.push(
-                                //           context,
-                                //           MaterialPageRoute(
-                                //             builder: (context) =>
-                                //                 EditProductForm(
-                                //                   product: product,
-                                //                 ),
-                                //           ),
-                                //         );
-                                //       },
-                                //       icon: Icon(Icons.edit),
-                                //     ),
-                                //     IconButton.filled(
-                                //       onPressed: () {
-                                //         showDialog(
-                                //           context: context,
-                                //           builder: (context) {
-                                //             return DeletedDialog(
-                                //               product: product,
-                                //             );
-                                //           },
-                                //         );
-                                //       },
-                                //       icon: Icon(Icons.delete),
-                                //     ),
-                                //   ],
-                                // ),
-                              ],
+                                  Container(
+                                    width: 30,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(5),
+                                      color: product.isActive
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         );

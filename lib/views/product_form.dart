@@ -301,11 +301,19 @@ class _ProductFormState extends State<ProductForm> {
 
               /// Submit Button
               ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                ),
                 onPressed: () {
                   _submitForm();
                 },
 
-                child: Text(isEng ? "Submit" : "បញ្ជូន"),
+                child: Text(
+                  isEng ? "Submit" : "បញ្ជូន",
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.surface,
+                  ),
+                ),
               ),
             ],
           ),

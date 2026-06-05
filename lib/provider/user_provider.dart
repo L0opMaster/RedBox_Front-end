@@ -30,4 +30,12 @@ class UserProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  UserModel? getUserById(int id) {
+    try {
+      return _listUser.firstWhere((user) => user.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
 }

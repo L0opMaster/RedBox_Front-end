@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:front_redbox/provider/product_provider.dart';
 import 'package:front_redbox/provider/user_provider.dart';
 import 'package:front_redbox/views/list_of_admin_product.dart';
-import 'package:front_redbox/views/list_of_product.dart';
 import 'package:front_redbox/views/list_of_user.dart';
 import 'package:provider/provider.dart';
 
@@ -22,7 +21,7 @@ class _TelemetryAdminState extends State<TelemetryAdmin> {
       _fetch = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.read<UserProvider>().fetchUser();
-        context.read<ProductProvider>().fetchProduct();
+        context.read<ProductProvider>().getAllProduct();
       });
     }
   }
@@ -31,17 +30,16 @@ class _TelemetryAdminState extends State<TelemetryAdmin> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    final myProductProvider = context.watch<ProductProvider>();
+    final adminproductLength = context.watch<ProductProvider>();
     final usersystem = context.watch<UserProvider>();
 
-    final products = myProductProvider.products;
+    final products = adminproductLength.allProducts;
     final users = usersystem.listUser;
-
     // no crash even if empty
     final totalProducts = products.length;
     final totalUsers = users.length;
     print('totalUsers $totalUsers');
-
+    final inActivePro = products.where((p) => p.isActive == false).length;
     final activeProducts = products.where((p) => p.isActive == true).length;
 
     final totalPrice = products.fold<double>(
@@ -81,7 +79,8 @@ class _TelemetryAdminState extends State<TelemetryAdmin> {
                 title: 'Total User',
                 value: totalUsers.toString(),
                 subtitle: 'All user using in system',
-                icon: Icons.inventory_2_rounded,
+                icon: Icons.people,
+                isButtom: true,
               ),
             ),
             _buildCard(
@@ -92,7 +91,7 @@ class _TelemetryAdminState extends State<TelemetryAdmin> {
               icon: Icons.inventory_2_rounded,
             ),
 
-            const SizedBox(height: 16),
+            // const SizedBox(height: 16),
 
             _buildCard(
               context,
@@ -102,7 +101,17 @@ class _TelemetryAdminState extends State<TelemetryAdmin> {
               icon: Icons.check_circle,
             ),
 
-            const SizedBox(height: 16),
+            // const SizedBox(height: 16),
+
+            _buildCard(
+              context,
+              title: 'Inctive Products',
+              value: inActivePro.toString(),
+              subtitle: 'Products currently active',
+              icon: Icons.cancel_outlined,
+            ),
+
+            // const SizedBox(height: 16),
 
             _buildCard(
               context,
@@ -154,6 +163,7 @@ class _TelemetryAdminState extends State<TelemetryAdmin> {
     required String value,
     required String subtitle,
     required IconData icon,
+    bool isButtom = false,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
 
@@ -165,7 +175,9 @@ class _TelemetryAdminState extends State<TelemetryAdmin> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: colorScheme.primaryContainer,
+                color: isButtom
+                    ? colorScheme.primaryContainer
+                    : colorScheme.surface,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(icon, color: colorScheme.primary, size: 32),

@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:front_redbox/model/product_page.dart';
 import 'package:front_redbox/provider/change_langue_provider.dart';
+import 'package:front_redbox/provider/user_provider.dart';
 import 'package:front_redbox/util/uri_launcher.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/cupertino.dart';
 
-class DetailView extends StatefulWidget {
+class DetailViewAdmin extends StatefulWidget {
   final Product product;
-  const DetailView({super.key, required this.product});
+  const DetailViewAdmin({super.key, required this.product});
 
   @override
-  State<DetailView> createState() => _DetailViewState();
+  State<DetailViewAdmin> createState() => _DetailViewAdminState();
 }
 
-class _DetailViewState extends State<DetailView> {
+class _DetailViewAdminState extends State<DetailViewAdmin> {
   Product get product => widget.product;
   final urlLauncher = UriLauncher();
   @override
   Widget build(BuildContext context) {
     final isEng = context.watch<ChangeLangueProvider>().isEnglish;
-    var media = MediaQuery.of(context).size;
+    final userProvider = context.watch<UserProvider>();
+
+    final owner = userProvider.getUserById(product.user);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
 
@@ -105,6 +108,7 @@ class _DetailViewState extends State<DetailView> {
                         ),
                       ),
 
+                      // ================= PRODUCT CODE (BOTTOM LEFT) =================
                       Positioned(
                         bottom: 8,
                         left: 8,
@@ -139,20 +143,15 @@ class _DetailViewState extends State<DetailView> {
                         Row(
                           mainAxisAlignment: .spaceBetween,
                           children: [
-                            Expanded(
-                              child: Text(
-                                isEng ? product.englishName : product.khmerName,
-                                maxLines: 2,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
+                            Text(
+                              isEng ? product.englishName : product.khmerName,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
                               ),
                             ),
-
                             Text(
                               "${product.price} \$",
-                              maxLines: 1,
                               style: TextStyle(
                                 color: Theme.of(context).colorScheme.secondary,
                                 fontSize: 18,
@@ -190,8 +189,8 @@ class _DetailViewState extends State<DetailView> {
                               isEng ? 'Contact :' : 'ទំនាក់ទំនង :',
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             // Wrap buttons in an Expanded block to prevent overflow across varied screen sizes
@@ -199,6 +198,7 @@ class _DetailViewState extends State<DetailView> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
+                                  // 1. Phone Call
                                   IconButton(
                                     onPressed: () =>
                                         urlLauncher.open("tel:+85516474665"),
@@ -209,6 +209,7 @@ class _DetailViewState extends State<DetailView> {
                                     tooltip: 'Call Support',
                                   ),
 
+                                  // 2. Telegram Chat
                                   IconButton(
                                     onPressed: () => urlLauncher.open(
                                       "https://t.me/Kan_socheata",
@@ -220,6 +221,7 @@ class _DetailViewState extends State<DetailView> {
                                     tooltip: 'Telegram',
                                   ),
 
+                                  // 3. Snapchat (Example Link Configuration)
                                   IconButton(
                                     onPressed: () => urlLauncher.open(
                                       "https://www.facebook.com/nobodyinurLife",
@@ -231,12 +233,13 @@ class _DetailViewState extends State<DetailView> {
                                     tooltip: 'Snapchat',
                                   ),
 
+                                  // 4. WeChat (Typically launched via direct deep link or web page fallback)
                                   IconButton(
                                     onPressed: () => urlLauncher.open(
                                       "https://www.tiktok.com/@async_21?lang=en",
                                     ),
                                     icon: const Icon(
-                                      Icons.tiktok_rounded,
+                                      Icons.tiktok,
                                       color: Colors.black,
                                     ),
                                     tooltip: 'WeChat',
@@ -250,11 +253,11 @@ class _DetailViewState extends State<DetailView> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              isEng ? 'Support Center :' : 'មជ្ឈមណ្ឌលគាំទ្រ :',
+                              isEng ? 'Store Location:' : 'មជ្ឈមណ្ឌលគាំទ្រ :',
                               style: TextStyle(
                                 fontSize: 18,
-                                fontWeight: FontWeight.bold,
                                 color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             Expanded(
@@ -268,6 +271,27 @@ class _DetailViewState extends State<DetailView> {
                                 ),
                                 icon: Icon(Icons.pin_drop_outlined),
                               ),
+                            ),
+                          ],
+                        ),
+                        Divider(),
+                        Row(
+                          mainAxisAlignment: .spaceBetween,
+                          children: [
+                            Text(
+                              'Owner :',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Theme.of(context).colorScheme.onSurface,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(owner?.firstName ?? 'Unknown'),
+                                SizedBox(width: 10),
+                                Text(owner?.lastName ?? 'Unknow'),
+                              ],
                             ),
                           ],
                         ),

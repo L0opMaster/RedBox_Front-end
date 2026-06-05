@@ -4,6 +4,7 @@ import 'package:front_redbox/provider/change_langue_provider.dart';
 import 'package:front_redbox/provider/product_provider.dart';
 import 'package:front_redbox/views/detail_view.dart';
 import 'package:provider/provider.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 class HomeView extends StatefulWidget {
@@ -19,6 +20,8 @@ class _HomeViewState extends State<HomeView> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
   final ScrollController _scrollController = ScrollController();
+  int _selectedCategoryId = 0;
+  final ItemScrollController _itemScrollController = ItemScrollController();
   @override
   void dispose() {
     _searchController.dispose();
@@ -30,6 +33,7 @@ class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
+    _selectedCategoryId = 0;
     _scrollController.addListener(_onScroll);
   }
 
@@ -57,20 +61,6 @@ class _HomeViewState extends State<HomeView> {
     }
   }
 
-  // void _showSnackBar(String message, {bool success = true}) {
-  //   ScaffoldMessenger.of(context).showSnackBar(
-  //     SnackBar(
-  //       content: Text(
-  //         message,
-  //         style: TextStyle(color: Theme.of(context).colorScheme.error),
-  //       ),
-  //       backgroundColor: success
-  //           ? Colors.green
-  //           : Theme.of(context).colorScheme.surface,
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     final isEng = context.read<ChangeLangueProvider>().isEnglish;
@@ -78,15 +68,13 @@ class _HomeViewState extends State<HomeView> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
       body: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(10),
         child: Column(
           children: [
             LayoutBuilder(
               builder: (context, constraints) {
                 return Row(
                   children: [
-                    // ================= ANIMATED SEARCH CONTAINER =================
-                    // If searching, let it expand to take all space. If not, it falls back to 42.
                     _isSearching
                         ? Expanded(
                             child: TextField(
@@ -197,7 +185,8 @@ class _HomeViewState extends State<HomeView> {
                             }
                             return SizedBox(
                               height: 36,
-                              child: ListView.builder(
+                              child: ScrollablePositionedList.builder(
+                                itemScrollController: _itemScrollController,
                                 scrollDirection: Axis.horizontal,
                                 itemCount: provider.categories.length,
                                 itemBuilder: (context, index) {
@@ -206,14 +195,20 @@ class _HomeViewState extends State<HomeView> {
                                       .watch<ChangeLangueProvider>()
                                       .isEnglish;
                                   final isSelected =
-                                      provider.selectedCategoryId ==
-                                      category.id;
+                                      _selectedCategoryId == category.id;
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 8.0),
                                     child: InkWell(
                                       onTap: () {
-                                        provider.setSelectedCategory(
-                                          category.id,
+                                        setState(() {
+                                          _selectedCategoryId = category.id;
+                                        });
+                                        _itemScrollController.scrollTo(
+                                          index: index,
+                                          duration: const Duration(
+                                            milliseconds: 300,
+                                          ),
+                                          alignment: 0.5,
                                         );
                                         context
                                             .read<ProductProvider>()
@@ -285,16 +280,12 @@ class _HomeViewState extends State<HomeView> {
             Expanded(
               child: Consumer<ProductProvider>(
                 builder: (context, value, child) {
-                  if (value.isLoading) {
+                  if (value.isLoading && value.products.isEmpty) {
                     return _buildProCardSkelenorizer();
                   }
-                  if (value.products.isEmpty) {
-                    return Center(
-                      child: Text(
-                        isEng ? 'Product not found' : 'មិនមាន​ ឬរកមិនឃើញ',
-                      ),
-                    );
-                  }
+                  final activeProducts = value.products
+                      .where((p) => p.isActive == true)
+                      .toList();
                   return RefreshIndicator(
                     displacement: 10,
                     onRefresh: () async {
@@ -305,16 +296,16 @@ class _HomeViewState extends State<HomeView> {
                     child: GridView.builder(
                       physics: const AlwaysScrollableScrollPhysics(),
                       controller: _scrollController,
-                      itemCount: value.products.length,
+                      itemCount: activeProducts.length,
                       gridDelegate:
                           const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 10,
-                            mainAxisSpacing: 10,
-                            childAspectRatio: 0.75,
+                            crossAxisSpacing: 5,
+                            mainAxisSpacing: 5,
+                            childAspectRatio: 0.8,
                           ),
                       itemBuilder: (context, index) {
-                        final product = value.products[index];
+                        final product = activeProducts[index];
                         final isEng = context
                             .watch<ChangeLangueProvider>()
                             .isEnglish;
@@ -332,7 +323,7 @@ class _HomeViewState extends State<HomeView> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                // ================= IMAGE =================
+                                
                                 Stack(
                                   children: [
                                     Container(
@@ -341,7 +332,7 @@ class _HomeViewState extends State<HomeView> {
                                       color: Colors.grey.shade300,
                                       child: Image.network(
                                         product.imageUrl,
-                                        fit: BoxFit.fill,
+                                        fit: BoxFit.cover,
                                         errorBuilder:
                                             (context, error, stackTrace) {
                                               return Center(
@@ -393,7 +384,7 @@ class _HomeViewState extends State<HomeView> {
                                   ],
                                 ),
 
-                                // ================= PRODUCT INFO =================
+                
                                 Expanded(
                                   child: Padding(
                                     padding: EdgeInsets.all(8.0),
@@ -408,9 +399,19 @@ class _HomeViewState extends State<HomeView> {
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                           ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                         SizedBox(height: 5),
-                                        Text("${product.price}\$"),
+                                        Text(
+                                          "${product.price}\$",
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                            fontSize: 18,
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -483,7 +484,6 @@ class _HomeViewState extends State<HomeView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ================= IMAGE =================
                 Stack(
                   children: [
                     Container(

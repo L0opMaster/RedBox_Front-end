@@ -9,7 +9,7 @@ class CategoriesService {
   static final CategoriesService _instance = CategoriesService._internal();
   factory CategoriesService() => _instance;
 
-  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl.baseUrl);
+  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl().baseUrl);
 
   Future<List<Category>> fetchCategories({String? token}) async {
     final response = await apiClient.get('/api/categories', token: token);

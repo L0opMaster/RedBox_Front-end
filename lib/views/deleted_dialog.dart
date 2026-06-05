@@ -46,7 +46,10 @@ class DeletedDialog extends StatelessWidget {
               ),
             );
           },
-          child: const Text("Delete"),
+          child: Text(
+            "Delete",
+            style: TextStyle(color: Theme.of(context).colorScheme.surface),
+          ),
         ),
       ],
     );

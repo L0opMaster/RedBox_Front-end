@@ -5,8 +5,9 @@ import 'package:front_redbox/service/productpage_service.dart';
 
 class ProductProvider with ChangeNotifier {
   List<Product> _products = [];
-
+  List<Product> _allProduct = [];
   bool _isLoading = false;
+  bool _isAllProLoading = false;
   int _page = 0;
   bool _hasMore = true;
   String _query = "";
@@ -15,7 +16,9 @@ class ProductProvider with ChangeNotifier {
   bool _isCreate = false;
 
   List<Product> get products => _products;
+  List<Product> get allProducts => _allProduct;
   bool get isLoading => _isLoading;
+  bool get isAllProLoading => _isAllProLoading;
   int get page => _page;
   bool get hasMore => _hasMore;
   String get query => _query;
@@ -103,5 +106,23 @@ class ProductProvider with ChangeNotifier {
   Future<void> search(String value) async {
     _query = value;
     await fetchProduct(refresh: true);
+  }
+
+  Future<void> getAllProduct() async {
+    if (_isAllProLoading) return;
+    _isAllProLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final token = await StorageService.getToken();
+      final result = await ProductpageService().getAllProduct(token: token);
+      _allProduct = result;
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isAllProLoading = false;
+      notifyListeners();
+    }
   }
 }

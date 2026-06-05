@@ -9,7 +9,7 @@ class RoleService {
   static final RoleService _instance = RoleService._internal();
   factory RoleService() => _instance;
 
-  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl.baseUrl);
+  final ApiClient apiClient = ApiClient(baseUrl: BaseUrl().baseUrl);
 
   Future<List<RoleModel>> fetchRole({String? token}) async {
     final response = await apiClient.get('/api/roles', token: token);

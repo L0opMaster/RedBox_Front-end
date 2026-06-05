@@ -5,6 +5,8 @@ import 'package:front_redbox/service/productpage_service.dart';
 
 class MyproductProvider with ChangeNotifier {
   List<MyProduct> _myproducts = [];
+  List<MyProduct> _allMyProducts = [];
+  bool _isAllProdLoading = false;
   bool _isloading = false;
   bool _hasMore = true;
   int? _categoryId;
@@ -15,6 +17,8 @@ class MyproductProvider with ChangeNotifier {
   bool _isDelete = false;
 
   List<MyProduct> get myproducts => _myproducts;
+  List<MyProduct> get allMyProducts => _allMyProducts;
+  bool get isAllProdLoading => _isAllProdLoading;
   bool get isloading => _isloading;
   bool get hasMore => _hasMore;
   int get page => _page;
@@ -60,6 +64,13 @@ class MyproductProvider with ChangeNotifier {
     }
 
     _isloading = false;
+    notifyListeners();
+  }
+
+  Future<void> clear() async {
+    myproducts.clear();
+    _page = 0;
+    _hasMore = true;
     notifyListeners();
   }
 
@@ -115,6 +126,24 @@ class MyproductProvider with ChangeNotifier {
       return false;
     } finally {
       _isDelete = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> gatAllMyPro() async {
+    if (_isAllProdLoading) return;
+    _isAllProdLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final token = await StorageService.getToken();
+      final results = await ProductpageService().getAllMyProduct(token: token);
+      _allMyProducts = results;
+    } catch (e) {
+      _errorMessage = e.toString();
+    } finally {
+      _isAllProdLoading = false;
       notifyListeners();
     }
   }
