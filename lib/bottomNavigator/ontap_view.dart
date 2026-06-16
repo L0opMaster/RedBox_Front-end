@@ -63,7 +63,10 @@ class _OntapViewState extends State<OntapView> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
           BottomNavigationBarItem(icon: Icon(Icons.add), label: "Add"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: "Menu"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.analytics_outlined),
+            label: "Telemetry",
+          ),
         ],
       ),
     );

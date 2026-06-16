@@ -63,95 +63,97 @@ class _TelemetryAdminState extends State<TelemetryAdmin> {
         ],
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ListOfUser()),
-                );
-              },
-              child: _buildCard(
-                context,
-                title: 'Total User',
-                value: totalUsers.toString(),
-                subtitle: 'All user using in system',
-                icon: Icons.people,
-                isButtom: true,
-              ),
-            ),
-            _buildCard(
-              context,
-              title: 'Total Products',
-              value: totalProducts.toString(),
-              subtitle: 'All products in system',
-              icon: Icons.inventory_2_rounded,
-            ),
-
-            // const SizedBox(height: 16),
-
-            _buildCard(
-              context,
-              title: 'Active Products',
-              value: activeProducts.toString(),
-              subtitle: 'Products currently active',
-              icon: Icons.check_circle,
-            ),
-
-            // const SizedBox(height: 16),
-
-            _buildCard(
-              context,
-              title: 'Inctive Products',
-              value: inActivePro.toString(),
-              subtitle: 'Products currently active',
-              icon: Icons.cancel_outlined,
-            ),
-
-            // const SizedBox(height: 16),
-
-            _buildCard(
-              context,
-              title: 'Total Price',
-              value: '\$${totalPrice.toStringAsFixed(2)}',
-              subtitle: 'Total amount of all products',
-              icon: Icons.attach_money_rounded,
-            ),
-
-            const SizedBox(height: 30),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await context.read<ProductProvider>().getAllProduct();
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              InkWell(
+                onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const ListOfAdminProduct(),
-                    ),
+                    MaterialPageRoute(builder: (context) => ListOfUser()),
                   );
                 },
-                icon: const Icon(Icons.list),
-                label: const Text(
-                  'View Product List',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                child: _buildCard(
+                  context,
+                  title: 'Total User',
+                  value: totalUsers.toString(),
+                  subtitle: 'All user using in system',
+                  icon: Icons.people,
+                  isButtom: true,
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+              ),
+              _buildCard(
+                context,
+                title: 'Total Products',
+                value: totalProducts.toString(),
+                subtitle: 'All products in system',
+                icon: Icons.inventory_2_rounded,
+              ),
+
+              // const SizedBox(height: 16),
+              _buildCard(
+                context,
+                title: 'Active Products',
+                value: activeProducts.toString(),
+                subtitle: 'Products currently active',
+                icon: Icons.check_circle,
+              ),
+
+              // const SizedBox(height: 16),
+              _buildCard(
+                context,
+                title: 'Inctive Products',
+                value: inActivePro.toString(),
+                subtitle: 'Products currently active',
+                icon: Icons.cancel_outlined,
+              ),
+
+              // const SizedBox(height: 16),
+              _buildCard(
+                context,
+                title: 'Total Price',
+                value: '\$${totalPrice.toStringAsFixed(2)}',
+                subtitle: 'Total amount of all products',
+                icon: Icons.attach_money_rounded,
+              ),
+
+              const SizedBox(height: 30),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ListOfAdminProduct(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.list),
+                  label: const Text(
+                    'View Product List',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

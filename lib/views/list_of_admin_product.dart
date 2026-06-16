@@ -223,8 +223,8 @@ class _ListOfAdminProductState extends State<ListOfAdminProduct> {
             Expanded(
               child: Consumer<ProductProvider>(
                 builder: (context, value, child) {
-                  if (value.isLoading) return _buildMyProductSkelenorizer();
-                  if (value.products.isEmpty) return SizedBox.shrink();
+                  if (value.isLoading & value.products.isEmpty)
+                    _buildMyProductSkelenorizer();
                   return RefreshIndicator(
                     displacement: 10,
                     onRefresh: () async {

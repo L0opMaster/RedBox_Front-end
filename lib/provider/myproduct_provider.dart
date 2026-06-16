@@ -92,8 +92,17 @@ class MyproductProvider with ChangeNotifier {
         token: token,
       );
 
-      final index = _myproducts.indexWhere((mypro) => mypro.id == id);
-      if (index != -1) _myproducts[index] = updated;
+      final pageIndex = _myproducts.indexWhere((mypro) => mypro.id == id);
+
+      if (pageIndex != -1) {
+        _myproducts[pageIndex] = updated;
+      }
+
+      final allIndex = _allMyProducts.indexWhere((mypro) => mypro.id == id);
+
+      if (allIndex != -1) {
+        _allMyProducts[allIndex] = updated;
+      }
 
       return true;
     } catch (e) {
@@ -119,6 +128,7 @@ class MyproductProvider with ChangeNotifier {
       await ProductpageService().deletedMyProduct(id: id, token: token);
 
       _myproducts.removeWhere((mypro) => mypro.id == id);
+      _allMyProducts.removeWhere((mypro) => mypro.id == id);
       notifyListeners();
       return true;
     } catch (e) {

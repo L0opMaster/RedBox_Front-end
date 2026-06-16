@@ -58,80 +58,76 @@ class _TelemetryState extends State<Telemetry> {
         ],
       ),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            _buildCard(
-              context,
-              title: 'Total Products',
-              value: totalProducts.toString(),
-              subtitle: 'All products in system',
-              icon: Icons.inventory_2_rounded,
-            ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await context.read<MyproductProvider>().allMyProducts;
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              _buildCard(
+                context,
+                title: 'Total Products',
+                value: totalProducts.toString(),
+                subtitle: 'All products in system',
+                icon: Icons.inventory_2_rounded,
+              ),
 
-            const SizedBox(height: 16),
+              _buildCard(
+                context,
+                title: 'Active Products',
+                value: activeProducts.toString(),
+                subtitle: 'Products currently active',
+                icon: Icons.check_circle,
+              ),
 
-            _buildCard(
-              context,
-              title: 'Active Products',
-              value: activeProducts.toString(),
-              subtitle: 'Products currently active',
-              icon: Icons.check_circle,
-            ),
-            const SizedBox(height: 16),
+              _buildCard(
+                context,
+                title: 'Inactive Products',
+                value: inactiveProducts.toString(),
+                subtitle: 'Products currently inactive',
+                icon: Icons.cancel_rounded,
+              ),
 
-            _buildCard(
-              context,
-              title: 'Inactive Products',
-              value: inactiveProducts.toString(),
-              subtitle: 'Products currently inactive',
-              icon: Icons.cancel_rounded,
-            ),
+              _buildCard(
+                context,
+                title: 'Total Price',
+                value: '\$${totalPrice.toStringAsFixed(2)}',
+                subtitle: 'Total amount of all products',
+                icon: Icons.attach_money_rounded,
+              ),
 
-            const SizedBox(height: 16),
-
-            const SizedBox(height: 16),
-
-            _buildCard(
-              context,
-              title: 'Total Price',
-              value: '\$${totalPrice.toStringAsFixed(2)}',
-              subtitle: 'Total amount of all products',
-              icon: Icons.attach_money_rounded,
-            ),
-
-            const SizedBox(height: 30),
-
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ListOfProduct(),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ListOfProduct(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.list),
+                  label: const Text(
+                    'View Product List',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
                     ),
-                  );
-                },
-                icon: const Icon(Icons.list),
-                label: const Text(
-                  'View Product List',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorScheme.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
                   ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );
